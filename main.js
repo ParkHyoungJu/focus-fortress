@@ -60,10 +60,10 @@ let tray = null;
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 960,
-    height: 640,
+    height: 900,
     minWidth: 420,
     minHeight: 560,
-    resizable: false,
+    resizable: true,
     frame: false,
     backgroundColor: '#0b1020',
     title: 'Focus Fortress',

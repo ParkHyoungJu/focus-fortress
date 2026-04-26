@@ -26,6 +26,7 @@ function applyDamageFromHit(amount) {
   const s = timer.getState();
   if (!s.running || s.phase !== timer.PHASE.FOCUS) return;
   hp.applyDamage(amount);
+  ui.triggerDamage(amount);
   sessionBlockedCount += 1;
 }
 

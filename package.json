@@ -1,6 +1,6 @@
 {
   "name": "focus-fortress",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Medieval-fantasy Pomodoro timer that gamifies focus: your castle HP drops when blocked apps are detected.",
   "main": "main.js",
   "scripts": {

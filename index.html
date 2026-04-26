@@ -8,7 +8,9 @@
   <link rel="stylesheet" href="./src/styles/brand.css" />
   <style>
     /* Page-local layout only. Component styling lives in brand.css. */
-    body { overflow: hidden; }
+    body { overflow: hidden; height: 100vh; margin: 0; }
+    .app-shell { height: 100vh; min-height: 0; }
+    main { overflow-y: auto; min-height: 0; height: 100%; }
     .titlebar {
       -webkit-app-region: drag;
       display: flex;
@@ -215,13 +217,176 @@
       gap: var(--sp-2);
       z-index: var(--z-toast);
     }
+
+    /* ============================================================
+       v0.2 — Damage feedback effects
+       ============================================================ */
+
+    /* Screen shake on damage */
+    @keyframes ff-shake {
+      0%, 100% { transform: translate(0, 0); }
+      10% { transform: translate(-4px, -2px); }
+      20% { transform: translate(4px,  1px); }
+      30% { transform: translate(-3px, 3px); }
+      40% { transform: translate(5px, -1px); }
+      50% { transform: translate(-4px, -4px); }
+      60% { transform: translate(3px,  2px); }
+      70% { transform: translate(-5px, 1px); }
+      80% { transform: translate(3px, -2px); }
+      90% { transform: translate(-2px, 3px); }
+    }
+    .app-shell.shake { animation: ff-shake 420ms ease-in-out; }
+
+    /* Red flash overlay */
+    .damage-flash {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      background:
+        radial-gradient(circle at center,
+          rgba(255, 60, 60, 0.45) 0%,
+          rgba(180, 20, 20, 0.20) 60%,
+          transparent 100%);
+      z-index: 9998;
+    }
+    .damage-flash.flash { animation: ff-flash 420ms ease-out; }
+    @keyframes ff-flash {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Damage number popup (bubbles up from HP bar) */
+    #damage-popup-host {
+      position: relative;
+      width: 100%;
+      pointer-events: none;
+      height: 0;
+    }
+    .dmg-popup {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 900;
+      color: #ff4d4d;
+      text-shadow:
+        3px 3px 0 #2a0808,
+        0 0 14px rgba(255, 80, 80, 0.85);
+      letter-spacing: 1px;
+      pointer-events: none;
+      animation: ff-dmg-pop 1200ms ease-out forwards;
+      z-index: 100;
+      white-space: nowrap;
+    }
+    @keyframes ff-dmg-pop {
+      0%   { transform: translateX(-50%) translateY(0)    scale(0.6); opacity: 0; }
+      15%  { transform: translateX(-50%) translateY(-12px) scale(1.4); opacity: 1; }
+      40%  { transform: translateX(-50%) translateY(-32px) scale(1.0); opacity: 1; }
+      100% { transform: translateX(-50%) translateY(-90px) scale(0.85); opacity: 0; }
+    }
+
+    /* ============================================================
+       v0.2 — HP-tiered castle damage states
+       ============================================================ */
+
+    /* MID (HP <= 60): subtle wobble + dimming towers */
+    .castle-frame[data-hp-level="mid"] .castle-frame__castle {
+      animation: castle-wobble 2.4s ease-in-out infinite;
+      filter: brightness(0.85);
+    }
+    .castle-frame[data-hp-level="mid"] .castle-frame__castle::before,
+    .castle-frame[data-hp-level="mid"] .castle-frame__castle::after {
+      filter: brightness(0.78);
+    }
+    /* visible crack across the keep */
+    .castle-frame[data-hp-level="mid"] .castle-frame__castle {
+      background-image:
+        linear-gradient(115deg,
+          transparent 38%,
+          rgba(0,0,0,0.55) 38%,
+          rgba(0,0,0,0.55) 40%,
+          transparent 40%,
+          transparent 62%,
+          rgba(0,0,0,0.45) 62%,
+          rgba(0,0,0,0.45) 63%,
+          transparent 63%);
+    }
+    @keyframes castle-wobble {
+      0%, 100% { transform: translateX(-50%); }
+      50%      { transform: translateX(calc(-50% + 2px)); }
+    }
+
+    /* LOW (HP <= 30): heavy shake, dark/red tint, banner tear, knight collapse, vignette */
+    .castle-frame[data-hp-level="low"] .castle-frame__castle {
+      animation: castle-shake 380ms ease-in-out infinite;
+      filter: brightness(0.55) saturate(0.8) hue-rotate(-12deg);
+      box-shadow:
+        inset 0 -6px 0 var(--color-stone-900),
+        inset 0 6px 0 var(--color-stone-700),
+        0 0 28px rgba(255, 50, 50, 0.55);
+      background-image:
+        linear-gradient(105deg,
+          transparent 22%,
+          rgba(0,0,0,0.7) 22%,
+          rgba(0,0,0,0.7) 25%,
+          transparent 25%,
+          transparent 48%,
+          rgba(0,0,0,0.65) 48%,
+          rgba(0,0,0,0.65) 51%,
+          transparent 51%,
+          transparent 74%,
+          rgba(0,0,0,0.7) 74%,
+          rgba(0,0,0,0.7) 77%,
+          transparent 77%);
+    }
+    .castle-frame[data-hp-level="low"] .castle-frame__castle::before,
+    .castle-frame[data-hp-level="low"] .castle-frame__castle::after {
+      filter: brightness(0.4) saturate(0.6);
+      background: var(--color-stone-700);
+    }
+    @keyframes castle-shake {
+      0%, 100% { transform: translateX(-50%); }
+      25%  { transform: translateX(calc(-50% - 3px)) rotate(-0.5deg); }
+      50%  { transform: translateX(calc(-50% + 3px)) rotate(0.5deg); }
+      75%  { transform: translateX(calc(-50% - 2px)); }
+    }
+    .castle-frame[data-hp-level="low"] .castle-frame__banner::after {
+      animation: banner-tear 800ms ease-in-out infinite;
+      background: #5a1010;
+    }
+    @keyframes banner-tear {
+      0%, 100% { transform: skewX(0)    scaleY(1);   opacity: 1; }
+      50%      { transform: skewX(18deg) scaleY(0.85); opacity: 0.55; }
+    }
+    .castle-frame[data-hp-level="low"] .castle-frame__knight {
+      animation: none;
+      filter: grayscale(0.7) brightness(0.6);
+      opacity: 0.55;
+    }
+
+    /* Vignette overlay inside castle frame on low HP */
+    .castle-frame[data-hp-level="low"]::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at center,
+          transparent 25%,
+          rgba(180, 20, 20, 0.18) 70%,
+          rgba(120, 10, 10, 0.35) 100%);
+    }
   </style>
 </head>
 <body>
   <div class="app-shell">
     <!-- Frameless titlebar -->
     <div class="titlebar">
-      <span>FOCUS FORTRESS v0.1.0</span>
+      <span>FOCUS FORTRESS v0.2.0</span>
       <div class="titlebar__controls">
         <button class="titlebar__btn" id="btn-min" title="Minimize">_</button>
         <button class="titlebar__btn titlebar__btn--close" id="btn-close" title="Close">X</button>
@@ -250,6 +415,8 @@
             <div class="castle-frame__banner"></div>
             <div class="castle-frame__knight"></div>
           </div>
+
+          <div id="damage-popup-host" aria-hidden="true"></div>
 
           <div class="hp-bar" id="hp-bar" data-level="high">
             <div class="hp-bar__label">
@@ -343,6 +510,9 @@
 
   <!-- Achievement unlock toasts -->
   <div class="unlock-toast-list" id="unlock-toast-list"></div>
+
+  <!-- v0.2 — Red damage flash overlay -->
+  <div class="damage-flash" id="damage-flash" aria-hidden="true"></div>
 
   <script type="module" src="./src/renderer.js"></script>
 </body>

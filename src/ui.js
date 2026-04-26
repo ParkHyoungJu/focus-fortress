@@ -28,6 +28,7 @@ export function renderHp(value) {
   const fill = document.getElementById('hp-fill');
   const label = document.getElementById('hp-value');
   const bar = document.getElementById('hp-bar');
+  const castle = document.querySelector('.castle-frame');
   if (!fill || !label || !bar) return;
   const pct = Math.max(0, Math.min(100, value));
   fill.style.width = pct + '%';
@@ -36,6 +37,35 @@ export function renderHp(value) {
   if (pct <= 30) level = 'low';
   else if (pct <= 60) level = 'mid';
   bar.setAttribute('data-level', level);
+  if (castle) castle.setAttribute('data-hp-level', level);
+}
+
+// ---------- Damage feedback (shake + flash + damage popup) ----------
+export function triggerDamage(amount) {
+  const shell = document.querySelector('.app-shell');
+  if (shell) {
+    shell.classList.remove('shake');
+    void shell.offsetWidth;
+    shell.classList.add('shake');
+    setTimeout(() => shell.classList.remove('shake'), 420);
+  }
+  const flash = document.getElementById('damage-flash');
+  if (flash) {
+    flash.classList.remove('flash');
+    void flash.offsetWidth;
+    flash.classList.add('flash');
+    setTimeout(() => flash.classList.remove('flash'), 420);
+  }
+  const host = document.getElementById('damage-popup-host');
+  if (host) {
+    const bubble = document.createElement('div');
+    bubble.className = 'dmg-popup';
+    bubble.textContent = `-${amount}`;
+    const dx = Math.round(Math.random() * 60 - 30);
+    bubble.style.left = `calc(50% + ${dx}px)`;
+    host.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 1200);
+  }
 }
 
 // ---------- Timer display ----------
