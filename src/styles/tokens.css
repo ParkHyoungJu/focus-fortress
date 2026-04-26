@@ -1,0 +1,139 @@
+/* ============================================================
+   Focus Fortress — Design Tokens
+   Medieval Fantasy Pixel Aesthetic
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
+
+:root {
+  /* ---------- Colors: Castle Palette ---------- */
+
+  /* Stone Gray — 성벽 */
+  --color-stone-50:  #e7e4de;
+  --color-stone-100: #c9c4bb;
+  --color-stone-300: #8a847a;
+  --color-stone-500: #5c564d;
+  --color-stone-700: #3a352e;
+  --color-stone-900: #1f1c17;
+
+  /* Banner Red — 깃발/피격 */
+  --color-banner-400: #e14b4b;
+  --color-banner-500: #b83232;
+  --color-banner-700: #7a1d1d;
+
+  /* Gold — XP/보상 */
+  --color-gold-300: #ffdf6b;
+  --color-gold-500: #e0b32a;
+  --color-gold-700: #8a6b10;
+
+  /* Blood — 위험/HP 낮음 */
+  --color-blood-400: #d93636;
+  --color-blood-600: #8a0f0f;
+
+  /* Background — 다크 네이비 */
+  --color-bg:        #0b1020;
+  --color-bg-deep:   #05070f;
+  --color-surface:   #151a2d;
+  --color-surface-2: #1e253f;
+  --color-overlay:   rgba(5, 7, 15, 0.78);
+
+  /* Text */
+  --color-text:        #f2ecd8; /* 양피지 톤 */
+  --color-text-muted:  #9b9588;
+  --color-text-dim:    #625d51;
+
+  /* Accent / Magic */
+  --color-accent:      #7bd3ea; /* 마법 블루 */
+  --color-accent-2:    #b882ff; /* 보라 마나 */
+
+  /* Semantic */
+  --color-success: #4caf5a;
+  --color-warning: var(--color-gold-500);
+  --color-danger:  var(--color-blood-400);
+
+  /* HP gradient stops */
+  --hp-high:  #4caf5a;
+  --hp-mid:   var(--color-gold-500);
+  --hp-low:   var(--color-blood-400);
+
+  /* ---------- Typography ---------- */
+  --font-pixel: "Press Start 2P", "Courier New", monospace;
+  --font-display: "VT323", "Courier New", monospace; /* 크게 써도 읽기 좋은 픽셀 모노 */
+  --font-mono: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --fs-xs:   10px;
+  --fs-sm:   12px;
+  --fs-md:   14px;
+  --fs-lg:   18px;
+  --fs-xl:   24px;
+  --fs-2xl:  32px;
+  --fs-timer: 96px; /* MM:SS 대형 디스플레이 */
+
+  --lh-tight: 1.1;
+  --lh-base:  1.4;
+  --lh-loose: 1.6;
+
+  /* ---------- Spacing (4/8px grid) ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 16px;
+  --sp-4: 24px;
+  --sp-5: 40px;
+  --sp-6: 64px;
+
+  /* ---------- Radius (pixel emphasis) ---------- */
+  --r-0: 0;      /* 픽셀 기본 */
+  --r-sm: 4px;
+  --r-md: 8px;
+
+  /* ---------- Borders ---------- */
+  --bw-1: 2px;
+  --bw-2: 4px;
+  --border-pixel: 2px solid var(--color-stone-700);
+  --border-pixel-gold: 2px solid var(--color-gold-500);
+
+  /* ---------- Shadows (dot / 8bit feel) ---------- */
+  /* 부드러운 blur 대신 offset 만 있는 "도트 그림자" */
+  --shadow-pixel-sm: 2px 2px 0 0 var(--color-stone-900);
+  --shadow-pixel-md: 4px 4px 0 0 var(--color-stone-900);
+  --shadow-pixel-lg: 6px 6px 0 0 var(--color-stone-900);
+  --shadow-inset-pixel: inset 0 0 0 2px var(--color-stone-700);
+  --shadow-glow-gold: 0 0 0 2px var(--color-gold-700), 0 0 12px rgba(224,179,42,0.35);
+  --shadow-glow-blood: 0 0 0 2px var(--color-blood-600), 0 0 12px rgba(217,54,54,0.45);
+
+  /* ---------- Motion ---------- */
+  --dur-fast: 80ms;
+  --dur-base: 160ms;
+  --dur-slow: 320ms;
+  --ease-step: steps(4, end);     /* 도트 애니메이션 */
+  --ease-out:  cubic-bezier(.2,.8,.2,1);
+
+  /* ---------- Layout ---------- */
+  --app-min-w: 420px;
+  --app-min-h: 560px;
+  --nav-h: 48px;
+  --tray-w: 320px;
+
+  /* ---------- Z-index ---------- */
+  --z-base: 1;
+  --z-nav: 10;
+  --z-modal: 100;
+  --z-toast: 200;
+}
+
+/* 픽셀 렌더링 기본값 (SVG/이미지 경계선 선명하게) */
+img,
+svg {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* 스크롤바 픽셀 스타일 (선택적) */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--color-bg-deep); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-stone-500);
+  border: 2px solid var(--color-bg-deep);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-stone-300); }

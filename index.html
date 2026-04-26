@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self';" />
+  <title>Focus Fortress</title>
+  <link rel="stylesheet" href="./src/styles/brand.css" />
+  <style>
+    /* Page-local layout only. Component styling lives in brand.css. */
+    body { overflow: hidden; }
+    .titlebar {
+      -webkit-app-region: drag;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 28px;
+      padding: 0 var(--sp-2);
+      background: var(--color-bg-deep);
+      border-bottom: 2px solid var(--color-stone-900);
+      font-family: var(--font-pixel);
+      font-size: var(--fs-xs);
+      color: var(--color-text-muted);
+    }
+    .titlebar__controls { -webkit-app-region: no-drag; display: flex; gap: 4px; }
+    .titlebar__btn {
+      width: 24px; height: 20px;
+      background: var(--color-stone-500);
+      color: var(--color-text);
+      border: 2px solid var(--color-stone-900);
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .titlebar__btn:hover { background: var(--color-stone-300); color: var(--color-stone-900); }
+    .titlebar__btn--close:hover { background: var(--color-banner-500); color: var(--color-text); }
+
+    .app-shell { grid-template-rows: 28px var(--nav-h) 1fr; }
+    .tab-panel { display: none; padding: var(--sp-3); overflow-y: auto; }
+    .tab-panel[data-active="true"] { display: block; }
+
+    .timer-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-3);
+    }
+
+    .watch-status {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-1);
+      padding: 2px var(--sp-2);
+      background: var(--color-surface-2);
+      border: 2px solid var(--color-stone-700);
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      color: var(--color-text-muted);
+      letter-spacing: 1px;
+    }
+    .watch-status[data-state="on"]  { color: var(--color-success); border-color: var(--color-success); }
+    .watch-status[data-state="off"] { color: var(--color-warning); border-color: var(--color-gold-700); }
+    .watch-status::before {
+      content: "";
+      width: 8px; height: 8px;
+      background: currentColor;
+      display: inline-block;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: var(--sp-2);
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .keyword-bar {
+      width: 100%;
+      max-width: 520px;
+      margin-top: var(--sp-3);
+    }
+    .keyword-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-1);
+      margin-top: var(--sp-2);
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px var(--sp-2);
+      background: var(--color-bg-deep);
+      border: 2px solid var(--color-stone-700);
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      color: var(--color-text);
+      letter-spacing: 1px;
+    }
+    .chip__x {
+      background: transparent;
+      color: var(--color-banner-400);
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      padding: 0 2px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--sp-3);
+      margin-bottom: var(--sp-4);
+    }
+
+    .bar-chart { display: flex; flex-direction: column; gap: var(--sp-2); }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 40px;
+      gap: var(--sp-2);
+      align-items: center;
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      color: var(--color-text-muted);
+    }
+    .bar-row__label { text-align: right; }
+    .bar-row__track {
+      height: 14px;
+      background: var(--color-stone-700);
+      border: 2px solid var(--color-stone-900);
+      position: relative;
+      overflow: hidden;
+    }
+    .bar-row__fill {
+      height: 100%;
+      background: var(--color-gold-500);
+      background-image: linear-gradient(90deg, rgba(255,255,255,0.15) 0 2px, transparent 2px 6px);
+      background-size: 6px 100%;
+    }
+    .bar-row__value { text-align: left; color: var(--color-gold-300); }
+
+    .session-log {
+      margin-top: var(--sp-3);
+      max-height: 160px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: var(--fs-sm);
+    }
+    .session-log__row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: var(--sp-2);
+      padding: 4px var(--sp-2);
+      border-bottom: 1px solid var(--color-stone-700);
+    }
+    .session-log__row[data-result="complete"] .session-log__result { color: var(--color-success); }
+    .session-log__row[data-result="failed"]   .session-log__result { color: var(--color-danger); }
+
+    /* Level-up overlay */
+    .levelup-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-overlay);
+      z-index: var(--z-modal);
+    }
+    .levelup-overlay[data-visible="true"] { display: grid; place-items: center; }
+    .levelup-card {
+      padding: var(--sp-5) var(--sp-6);
+      background: var(--color-surface);
+      border: 4px solid var(--color-gold-500);
+      box-shadow: var(--shadow-glow-gold), var(--shadow-pixel-lg);
+      text-align: center;
+      animation: levelup-pop 600ms var(--ease-out);
+    }
+    .levelup-card__title {
+      font-family: var(--font-pixel);
+      font-size: var(--fs-lg);
+      color: var(--color-gold-300);
+      letter-spacing: 2px;
+      margin-bottom: var(--sp-2);
+    }
+    .levelup-card__level {
+      font-family: var(--font-display);
+      font-size: 72px;
+      color: var(--color-gold-300);
+      text-shadow: 4px 4px 0 var(--color-stone-900);
+      line-height: 1;
+    }
+    .levelup-card__hint {
+      margin-top: var(--sp-3);
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      color: var(--color-text-muted);
+      letter-spacing: 1px;
+    }
+    @keyframes levelup-pop {
+      0%   { transform: scale(0.6); opacity: 0; }
+      60%  { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .unlock-toast-list {
+      position: fixed;
+      top: 64px;
+      right: var(--sp-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      z-index: var(--z-toast);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Frameless titlebar -->
+    <div class="titlebar">
+      <span>FOCUS FORTRESS v0.1.0</span>
+      <div class="titlebar__controls">
+        <button class="titlebar__btn" id="btn-min" title="Minimize">_</button>
+        <button class="titlebar__btn titlebar__btn--close" id="btn-close" title="Close">X</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="nav">
+      <div class="nav__brand">[FOCUS FORTRESS]</div>
+      <div class="nav__tabs" role="tablist">
+        <button class="nav__tab" role="tab" data-tab="timer" aria-selected="true">TIMER</button>
+        <button class="nav__tab" role="tab" data-tab="achieve" aria-selected="false">ACHIEVE</button>
+        <button class="nav__tab" role="tab" data-tab="stats" aria-selected="false">STATS</button>
+      </div>
+    </nav>
+
+    <main>
+      <!-- ===== TIMER TAB ===== -->
+      <section class="tab-panel" data-tab-panel="timer" data-active="true">
+        <div class="timer-layout">
+          <span class="watch-status" id="watch-status" data-state="loading">WATCH: INIT</span>
+
+          <div class="castle-frame">
+            <div class="castle-frame__stage"></div>
+            <div class="castle-frame__castle"></div>
+            <div class="castle-frame__banner"></div>
+            <div class="castle-frame__knight"></div>
+          </div>
+
+          <div class="hp-bar" id="hp-bar" data-level="high">
+            <div class="hp-bar__label">
+              <span>HP</span>
+              <span><span id="hp-value">100</span> / 100</span>
+            </div>
+            <div class="hp-bar__track">
+              <div class="hp-bar__fill" id="hp-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="timer">
+            <div class="timer__phase" id="timer-phase">FOCUS #1</div>
+            <div class="timer__clock" id="timer-clock" data-state="idle">25:00</div>
+            <div class="timer__meta">
+              <span>Streak: <span class="gold" id="meta-streak">0</span></span>
+              <span>XP: <span class="gold" id="meta-xp">0</span></span>
+              <span>Lv: <span class="gold" id="meta-level">1</span></span>
+            </div>
+          </div>
+
+          <div class="controls-row">
+            <button class="btn btn--primary btn--lg" id="btn-start">START</button>
+            <button class="btn btn--lg" id="btn-pause" disabled>PAUSE</button>
+            <button class="btn btn--ghost btn--lg" id="btn-reset">RESET</button>
+          </div>
+
+          <div class="card keyword-bar">
+            <div class="card__title">BLOCK KEYWORDS</div>
+            <div class="row">
+              <input class="input" id="keyword-input" placeholder="e.g. facebook" />
+              <button class="btn btn--gold btn--sm" id="btn-add-keyword">ADD</button>
+            </div>
+            <div class="keyword-chips" id="keyword-chips"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ACHIEVEMENTS TAB ===== -->
+      <section class="tab-panel" data-tab-panel="achieve">
+        <div class="row" style="justify-content: space-between; padding: 0 var(--sp-3);">
+          <h1>ACHIEVEMENTS</h1>
+          <span class="pixel-text gold"><span id="achieve-count">0</span> / 10</span>
+        </div>
+        <div class="badge-grid" id="badge-grid"></div>
+      </section>
+
+      <!-- ===== STATS TAB ===== -->
+      <section class="tab-panel" data-tab-panel="stats">
+        <h1>WEEKLY REPORT</h1>
+        <div class="stats-grid">
+          <div class="stat">
+            <span class="stat__value" id="stat-sessions">0</span>
+            <span class="stat__label">SESSIONS</span>
+          </div>
+          <div class="stat">
+            <span class="stat__value" id="stat-completion">0%</span>
+            <span class="stat__label">COMPLETION</span>
+          </div>
+          <div class="stat">
+            <span class="stat__value" id="stat-focused">0h 00m</span>
+            <span class="stat__label">FOCUSED</span>
+          </div>
+          <div class="stat">
+            <span class="stat__value" id="stat-streak">0</span>
+            <span class="stat__label">STREAK</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">DAILY SESSIONS (LAST 7 DAYS)</div>
+          <div class="bar-chart" id="bar-chart"></div>
+        </div>
+
+        <div class="card" style="margin-top: var(--sp-3);">
+          <div class="card__title">RECENT SESSION LOG</div>
+          <div class="session-log" id="session-log"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Level-up overlay -->
+  <div class="levelup-overlay" id="levelup-overlay" data-visible="false">
+    <div class="levelup-card">
+      <div class="levelup-card__title">LEVEL UP!</div>
+      <div class="levelup-card__level" id="levelup-level">2</div>
+      <div class="levelup-card__hint">CLICK TO DISMISS</div>
+    </div>
+  </div>
+
+  <!-- Achievement unlock toasts -->
+  <div class="unlock-toast-list" id="unlock-toast-list"></div>
+
+  <script type="module" src="./src/renderer.js"></script>
+</body>
+</html>

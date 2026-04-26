@@ -1,0 +1,56 @@
+{
+  "name": "focus-fortress",
+  "version": "0.1.0",
+  "description": "Medieval-fantasy Pomodoro timer that gamifies focus: your castle HP drops when blocked apps are detected.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "pack": "electron-builder --dir"
+  },
+  "keywords": [
+    "electron",
+    "pomodoro",
+    "focus",
+    "productivity",
+    "gamification"
+  ],
+  "author": "Focus Fortress Team",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "active-win": "^8.2.1",
+    "electron-store": "^8.2.0"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.autoprogramming.focus-fortress",
+    "productName": "Focus Fortress",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "shortcutName": "Focus Fortress"
+    },
+    "publish": null
+  }
+}
